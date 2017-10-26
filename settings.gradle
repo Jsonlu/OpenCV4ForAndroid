@@ -1,0 +1,12 @@
+include ':15-puzzle'
+include ':camera-calibration'
+include ':color-blob-detection'
+include ':face-detection'
+include ':image-manipulations'
+include ':native-activity'
+include ':tutorial-1-camerapreview'
+include ':tutorial-2-mixedprocessing'
+include ':tutorial-3-cameracontrol'
+
+include ':sdk'
+project(':sdk').projectDir = new File('./sdk/java')

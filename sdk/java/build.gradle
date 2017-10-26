@@ -1,0 +1,34 @@
+apply from: '../../baseAndroidLib.gradle'
+
+dependencies {
+    compile fileTree(include: '*.jar', dir: 'libs')
+}
+
+android {
+
+    compileSdkVersion CompileSdkVersion as int
+    buildToolsVersion BuildToolsVersion
+    defaultConfig {
+        minSdkVersion MinSdkVersion as int
+        targetSdkVersion TargetSdkVersion as int
+        versionCode VersionCode as int
+        versionName VersionName
+    }
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = ['src']
+            resources.srcDirs = ['src']
+            aidl.srcDirs = ['src']
+            renderscript.srcDirs = ['src']
+            res.srcDirs = ['res']
+            assets.srcDirs = ['assets']
+            jniLibs.srcDirs = ['libs', '../native/libs']
+        }
+
+        instrumentTest.setRoot('tests')
+
+        debug.setRoot('build-types/debug')
+        release.setRoot('build-types/release')
+    }
+}

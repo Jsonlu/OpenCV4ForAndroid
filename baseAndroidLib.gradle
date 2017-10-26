@@ -1,0 +1,64 @@
+apply plugin: 'com.android.library'
+
+
+android {
+
+    compileSdkVersion CompileSdkVersion as int
+    buildToolsVersion BuildToolsVersion
+    defaultConfig {
+        minSdkVersion MinSdkVersion as int
+        targetSdkVersion TargetSdkVersion as int
+        versionCode VersionCode as int
+        versionName VersionName
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+    }
+    aaptOptions.cruncherEnabled = false
+    aaptOptions.useNewCruncher = false
+    lintOptions {
+        abortOnError false
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
+    }
+
+    defaultConfig {
+        // dex突破65535的限制
+        multiDexEnabled true
+    }
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = ['src']
+            resources.srcDirs = ['src']
+            aidl.srcDirs = ['src']
+            renderscript.srcDirs = ['src']
+            res.srcDirs = ['res']
+            assets.srcDirs = ['assets']
+            //jni.srcDirs = ['src/main/jni']
+        }
+
+    }
+    buildTypes {
+        debug {
+//            signingConfig signingConfigs.config
+            zipAlignEnabled true
+            // 移除无用的resource文件
+            shrinkResources false
+            minifyEnabled false
+            proguardFile 'proguard-project.txt'
+        }
+        release {
+//            signingConfig signingConfigs.config
+            zipAlignEnabled true
+            // 移除无用的resource文件
+            shrinkResources false
+            minifyEnabled false
+            proguardFile 'proguard-project.txt'
+        }
+    }
+}
+

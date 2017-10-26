@@ -1,0 +1,13 @@
+.gradle/
+.idea/
+gradle/
+build
+build/
+*.iml
+.classpath
+.project
+.cproject
+project.properties
+.settings/
+gen/
+obj/
