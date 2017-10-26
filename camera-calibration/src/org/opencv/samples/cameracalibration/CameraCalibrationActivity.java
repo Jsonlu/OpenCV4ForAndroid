@@ -13,14 +13,6 @@
 
 package org.opencv.samples.cameracalibration;
 
-import org.opencv.android.BaseLoaderCallback;
-import org.opencv.android.CameraBridgeViewBase;
-import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
-import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
-import org.opencv.android.LoaderCallbackInterface;
-import org.opencv.android.OpenCVLoader;
-import org.opencv.core.Mat;
-
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.res.Resources;
@@ -36,6 +28,14 @@ import android.view.View.OnTouchListener;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import org.opencv.android.BaseLoaderCallback;
+import org.opencv.android.CameraBridgeViewBase;
+import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
+import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
+import org.opencv.android.LoaderCallbackInterface;
+import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Mat;
+
 public class CameraCalibrationActivity extends Activity implements CvCameraViewListener2, OnTouchListener {
     private static final String TAG = "OCVSample::Activity";
 
@@ -49,16 +49,16 @@ public class CameraCalibrationActivity extends Activity implements CvCameraViewL
         @Override
         public void onManagerConnected(int status) {
             switch (status) {
-            case LoaderCallbackInterface.SUCCESS:
-            {
-                Log.i(TAG, "OpenCV loaded successfully");
-                mOpenCvCameraView.enableView();
-                mOpenCvCameraView.setOnTouchListener(CameraCalibrationActivity.this);
-            } break;
-            default:
-            {
-                super.onManagerConnected(status);
-            } break;
+                case LoaderCallbackInterface.SUCCESS: {
+                    Log.i(TAG, "OpenCV loaded successfully");
+                    mOpenCvCameraView.enableView();
+                    mOpenCvCameraView.setOnTouchListener(CameraCalibrationActivity.this);
+                }
+                break;
+                default: {
+                    super.onManagerConnected(status);
+                }
+                break;
             }
         }
     };
@@ -81,18 +81,22 @@ public class CameraCalibrationActivity extends Activity implements CvCameraViewL
     }
 
     @Override
-    public void onPause()
-    {
+    public void onPause() {
         super.onPause();
         if (mOpenCvCameraView != null)
             mOpenCvCameraView.disableView();
     }
 
     @Override
-    public void onResume()
-    {
+    public void onResume() {
         super.onResume();
-        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_2, this, mLoaderCallback);
+        if (!OpenCVLoader.initDebug()) {
+            Log.d(TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
+            OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, this, mLoaderCallback);
+        } else {
+            Log.d(TAG, "OpenCV library found inside package. Using it!");
+            mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
+        }
     }
 
     public void onDestroy() {
@@ -110,7 +114,7 @@ public class CameraCalibrationActivity extends Activity implements CvCameraViewL
     }
 
     @Override
-    public boolean onPrepareOptionsMenu (Menu menu) {
+    public boolean onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
         menu.findItem(R.id.preview_mode).setEnabled(true);
         if (!mCalibrator.isCalibrated())
@@ -122,67 +126,67 @@ public class CameraCalibrationActivity extends Activity implements CvCameraViewL
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-        case R.id.calibration:
-            mOnCameraFrameRender =
-                new OnCameraFrameRender(new CalibrationFrameRender(mCalibrator));
-            item.setChecked(true);
-            return true;
-        case R.id.undistortion:
-            mOnCameraFrameRender =
-                new OnCameraFrameRender(new UndistortionFrameRender(mCalibrator));
-            item.setChecked(true);
-            return true;
-        case R.id.comparison:
-            mOnCameraFrameRender =
-                new OnCameraFrameRender(new ComparisonFrameRender(mCalibrator, mWidth, mHeight, getResources()));
-            item.setChecked(true);
-            return true;
-        case R.id.calibrate:
-            final Resources res = getResources();
-            if (mCalibrator.getCornersBufferSize() < 2) {
-                (Toast.makeText(this, res.getString(R.string.more_samples), Toast.LENGTH_SHORT)).show();
+            case R.id.calibration:
+                mOnCameraFrameRender =
+                        new OnCameraFrameRender(new CalibrationFrameRender(mCalibrator));
+                item.setChecked(true);
                 return true;
-            }
-
-            mOnCameraFrameRender = new OnCameraFrameRender(new PreviewFrameRender());
-            new AsyncTask<Void, Void, Void>() {
-                private ProgressDialog calibrationProgress;
-
-                @Override
-                protected void onPreExecute() {
-                    calibrationProgress = new ProgressDialog(CameraCalibrationActivity.this);
-                    calibrationProgress.setTitle(res.getString(R.string.calibrating));
-                    calibrationProgress.setMessage(res.getString(R.string.please_wait));
-                    calibrationProgress.setCancelable(false);
-                    calibrationProgress.setIndeterminate(true);
-                    calibrationProgress.show();
+            case R.id.undistortion:
+                mOnCameraFrameRender =
+                        new OnCameraFrameRender(new UndistortionFrameRender(mCalibrator));
+                item.setChecked(true);
+                return true;
+            case R.id.comparison:
+                mOnCameraFrameRender =
+                        new OnCameraFrameRender(new ComparisonFrameRender(mCalibrator, mWidth, mHeight, getResources()));
+                item.setChecked(true);
+                return true;
+            case R.id.calibrate:
+                final Resources res = getResources();
+                if (mCalibrator.getCornersBufferSize() < 2) {
+                    (Toast.makeText(this, res.getString(R.string.more_samples), Toast.LENGTH_SHORT)).show();
+                    return true;
                 }
 
-                @Override
-                protected Void doInBackground(Void... arg0) {
-                    mCalibrator.calibrate();
-                    return null;
-                }
+                mOnCameraFrameRender = new OnCameraFrameRender(new PreviewFrameRender());
+                new AsyncTask<Void, Void, Void>() {
+                    private ProgressDialog calibrationProgress;
 
-                @Override
-                protected void onPostExecute(Void result) {
-                    calibrationProgress.dismiss();
-                    mCalibrator.clearCorners();
-                    mOnCameraFrameRender = new OnCameraFrameRender(new CalibrationFrameRender(mCalibrator));
-                    String resultMessage = (mCalibrator.isCalibrated()) ?
-                            res.getString(R.string.calibration_successful)  + " " + mCalibrator.getAvgReprojectionError() :
-                            res.getString(R.string.calibration_unsuccessful);
-                    (Toast.makeText(CameraCalibrationActivity.this, resultMessage, Toast.LENGTH_SHORT)).show();
-
-                    if (mCalibrator.isCalibrated()) {
-                        CalibrationResult.save(CameraCalibrationActivity.this,
-                                mCalibrator.getCameraMatrix(), mCalibrator.getDistortionCoefficients());
+                    @Override
+                    protected void onPreExecute() {
+                        calibrationProgress = new ProgressDialog(CameraCalibrationActivity.this);
+                        calibrationProgress.setTitle(res.getString(R.string.calibrating));
+                        calibrationProgress.setMessage(res.getString(R.string.please_wait));
+                        calibrationProgress.setCancelable(false);
+                        calibrationProgress.setIndeterminate(true);
+                        calibrationProgress.show();
                     }
-                }
-            }.execute();
-            return true;
-        default:
-            return super.onOptionsItemSelected(item);
+
+                    @Override
+                    protected Void doInBackground(Void... arg0) {
+                        mCalibrator.calibrate();
+                        return null;
+                    }
+
+                    @Override
+                    protected void onPostExecute(Void result) {
+                        calibrationProgress.dismiss();
+                        mCalibrator.clearCorners();
+                        mOnCameraFrameRender = new OnCameraFrameRender(new CalibrationFrameRender(mCalibrator));
+                        String resultMessage = (mCalibrator.isCalibrated()) ?
+                                res.getString(R.string.calibration_successful) + " " + mCalibrator.getAvgReprojectionError() :
+                                res.getString(R.string.calibration_unsuccessful);
+                        (Toast.makeText(CameraCalibrationActivity.this, resultMessage, Toast.LENGTH_SHORT)).show();
+
+                        if (mCalibrator.isCalibrated()) {
+                            CalibrationResult.save(CameraCalibrationActivity.this,
+                                    mCalibrator.getCameraMatrix(), mCalibrator.getDistortionCoefficients());
+                        }
+                    }
+                }.execute();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
     }
 
